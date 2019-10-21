@@ -1,8 +1,9 @@
 import HZoo._
+import cats._
+import cats.implicits._
+import cats.data._
 import Parser._
 import ParserF._
-import cats._, cats.implicits._
-import cats.data._
 
 object Example {
 
@@ -46,6 +47,32 @@ object Example {
 
   def main(args: Array[String]): Unit = {
 
+    def runner[O](p: HFix[ParserF, O])(s: String): Either[String, (String, O)] =
+      hCata(run, p).run.run(s).value.value
+
+    def project[O](p: HFix[ParserF, O]): Parser[O] = hCata(ParserAlgebras.fold, p)
+    def embed[O](p: Parser[O]): HFix[ParserF, O]   = hAna(ParserAlgebras.unfold, p)
+
+    val program1 = Map(
+      Literal('a'), { c: Char =>
+        s"I parsed the character $c"
+      }
+    )
+
+    println(runner(embed(program1))("abc"))
+
+    val program2 = Parser.FlatMap(
+      Literals("abc"), { a: String =>
+        Map(
+          Literals("def"), { b: String =>
+            s"I parsed $a then $b"
+          }
+        )
+      }
+    )
+
+    println(runner(embed(program2))("abcdefghi"))
+    /*
     val r1 = hCata(run, HFix(LiteralF('a'): ParserF[HFix[ParserF, *], Char])).run.run("abc").value.value
     val r2 = hCata(run,
                    HFix(
@@ -58,6 +85,8 @@ object Example {
     println(r1, r2)
 
     //MapF(HFix(TakeWhileF(_ != '\n')), s => s"I got the string: $s")
+
+   */
 
   }
 }

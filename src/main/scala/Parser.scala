@@ -1,3 +1,4 @@
+import HZoo.{HAlgebra, HCoalgebra}
 import cats._
 import cats.implicits._
 import cats.effect._
@@ -43,4 +44,26 @@ object ParserF {
 
   }
 
+}
+
+object ParserAlgebras {
+  val unfold: HCoalgebra[ParserF, Parser] = new HCoalgebra[ParserF, Parser] {
+    override def apply[A](fa: Parser[A]): ParserF[Parser, A] = fa match {
+      case Parser.Literal(c)    => ParserF.LiteralF(c)
+      case Parser.Literals(s)   => ParserF.LiteralsF(s)
+      case Parser.TakeWhile(f)  => ParserF.TakeWhileF(f)
+      case Parser.Map(p, f)     => ParserF.MapF(p, f)
+      case Parser.FlatMap(p, f) => ParserF.FlatMapF(p, f)
+    }
+  }
+
+  val fold: HAlgebra[ParserF, Parser] = new HAlgebra[ParserF, Parser] {
+    override def apply[A](fa: ParserF[Parser, A]): Parser[A] = fa match {
+      case ParserF.LiteralF(c)    => Parser.Literal(c)
+      case ParserF.LiteralsF(s)   => Parser.Literals(s)
+      case ParserF.TakeWhileF(f)  => Parser.TakeWhile(f)
+      case ParserF.MapF(p, f)     => Parser.Map(p, f)
+      case ParserF.FlatMapF(p, f) => Parser.FlatMap(p, f)
+    }
+  }
 }
