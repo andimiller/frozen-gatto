@@ -1,8 +1,4 @@
 import cats.~>
-import higherkindness.droste.{Algebra, Coalgebra}
-import higherkindness.droste.data.Fix
-import higherkindness.droste.meta.Meta
-import higherkindness.droste.scheme._
 
 import scala.language.higherKinds
 
