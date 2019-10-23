@@ -1,4 +1,7 @@
-import HZoo._
+package net.andimiller.gatto.frozen
+
+import net.andimiller.turtles.flying._
+import net.andimiller.turtles.flying.schemes._
 import cats._
 import cats.implicits._
 import cats.data._
@@ -72,15 +75,15 @@ object Example {
   def main(args: Array[String]): Unit = {
 
     def runner[O](p: HFix[ParserF, O]): String => Either[String, (String, O)] = {
-      val program = hCata(run, p).run
+      val program = hCata(run).apply(p).run
 
       { s: String =>
         program.run(s).value.value
       }
     }
 
-    def project[O](p: HFix[ParserF, O]): Parser[O] = hCata(ParserAlgebras.fold, p)
-    def embed[O](p: Parser[O]): HFix[ParserF, O]   = hAna(ParserAlgebras.unfold, p)
+    def project[O](p: HFix[ParserF, O]): Parser[O] = hCata(ParserAlgebras.fold).apply(p)
+    def embed[O](p: Parser[O]): HFix[ParserF, O]   = hAna(ParserAlgebras.unfold).apply(p)
 
     val program1 = Map(
       Literal('a'), { c: Char =>
@@ -103,7 +106,6 @@ object Example {
     println(runner(embed(program2))("abcdefghi"))
 
     val program3 = {
-      import Parser._
       val greeting = Literals("hello").orElse(Literals("hi"))
       val space    = Literal(' ')
       val world    = Literals("world")
@@ -116,7 +118,6 @@ object Example {
     println(runner(embed(program3))("hi"))
 
     val program4 = {
-      import Parser._
       for {
         a          <- Pure("pure value")
         firstWord  <- TakeWhile(_ != ' ')
@@ -134,7 +135,6 @@ object Example {
     println(compiledProgram4("123"))
 
     val program5 = {
-      import Parser._
       val a = Literal('a')
       rep(a)
     }
@@ -143,11 +143,11 @@ object Example {
     println(compiledProgram5("aaaabcd"))
 
     /*
-    val r1 = hCata(run, HFix(LiteralF('a'): ParserF[HFix[ParserF, *], Char])).run.run("abc").value.value
+    val r1 = hCata(run, HFix(LiteralF('a'): net.andimiller.gatto.frozen.ParserF[HFix[net.andimiller.gatto.frozen.ParserF, *], Char])).run.run("abc").value.value
     val r2 = hCata(run,
                    HFix(
                      MapF(
-                       HFix(LiteralsF("abc"): ParserF[HFix[ParserF, *], String]),
+                       HFix(LiteralsF("abc"): net.andimiller.gatto.frozen.ParserF[HFix[net.andimiller.gatto.frozen.ParserF, *], String]),
                        (s: String) => s"I just parsed $s"
                      )
                    )).run.run("abcdef").value.value

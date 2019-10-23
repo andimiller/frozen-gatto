@@ -1,8 +1,8 @@
-import HZoo.{HAlgebra, HCoalgebra}
+package net.andimiller.gatto.frozen
+
 import cats._
 import cats.implicits._
-import cats.effect._
-import cats.data._
+import net.andimiller.turtles.flying._
 
 sealed trait Parser[A] {
   def map[B](f: A => B): Parser[B]        = Parser.Map(this, f)
