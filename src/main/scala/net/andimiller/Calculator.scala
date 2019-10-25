@@ -38,7 +38,7 @@ object Calculator {
 
   import Expression._, ExpressionF._
 
-  val unembed = new HAlgebra[ExpressionF, Expression] {
+  val project = new HAlgebra[ExpressionF, Expression] {
     def apply[A](fa: ExpressionF[Expression, A]): Expression[A] = fa match {
       case add: AddF[Expression, _] => Add(add.a, add.b)(add.semigroup)
       case IntLiteralF(i)           => IntLiteral(i)
@@ -65,10 +65,10 @@ object Calculator {
   def main(args: Array[String]): Unit = {
     import net.andimiller.turtles.flying.schemes._
     // we can turn representations into each other
-    val expr: Expression[Int] = Add(IntLiteral(1), IntLiteral(2))
+    val expr: Expression[Int]                        = Add(IntLiteral(1), IntLiteral(2))
     val embedder: Expression ~> HFix[ExpressionF, *] = hAna(embed)
-    val exprf: HFix[ExpressionF, Int] = embedder(expr)
-    println(expr) // Add(IntLiteral(1),IntLiteral(2))
+    val exprf: HFix[ExpressionF, Int]                = embedder(expr)
+    println(expr)  // Add(IntLiteral(1),IntLiteral(2))
     println(exprf) // HFix(AddF(HFix(IntLiteralF(1)),HFix(IntLiteralF(2))))
 
     // and we can run them
