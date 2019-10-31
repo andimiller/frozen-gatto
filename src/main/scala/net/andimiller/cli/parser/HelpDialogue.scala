@@ -12,7 +12,8 @@ object HelpDialogue {
   case object Blank extends Help[Nothing]
   case class OptionHelp[A](short: String, long: String, help: String)
   case class EnvHelp[A](name: String, help: String)
-  case class CommandHelp[A](command: String, options: List[OptionHelp[A]], envs: List[EnvHelp[A]], subcommands: List[CommandHelp[A]]) extends Help[A]
+  case class CommandHelp[A](command: String, options: List[OptionHelp[A]], envs: List[EnvHelp[A]], subcommands: List[CommandHelp[A]])
+      extends Help[A]
 
   object CommandHelp {
     implicit def semigroup[A]: Semigroup[CommandHelp[A]] = new Semigroup[CommandHelp[A]] {
@@ -26,6 +27,7 @@ object HelpDialogue {
     }
   }
 
+  /*
   object Help {
     implicit def semigrou[A]: Semigroup[Help[A]] = new Semigroup[Help[A]] {
 
@@ -76,4 +78,6 @@ object HelpDialogue {
 //    println(help(Command("ls", "list files", lsOptions)))
   }
 
+
+ */
 }
