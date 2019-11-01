@@ -40,6 +40,16 @@ object Runner {
     }
   )
 
+  def popCommand(name: String): EitherT[StateT[Eval, ParserInput, *], String, Unit] = EitherT(
+    StateT { s =>
+      if (s.args.headOption == Option(name)) {
+        Eval.now(().asRight[String]).tupleLeft(ParserInput(s.args.tail, s.env))
+      } else {
+        Eval.now(s"Expected command $name".asLeft[Unit]).tupleLeft(s)
+      }
+    }
+  )
+
   def getEnv(name: String): EitherT[StateT[Eval, ParserInput, *], String, String] = EitherT(
     StateT { s =>
       s.env.get(name) match {
@@ -78,11 +88,12 @@ object Runner {
       case af: ParserF.ArgF      => popHead(af.metavar).iKnowItsAn[A]
       case lof: ParserF.LongOptF => popArg(lof.long, lof.short).iKnowItsAn[A]
       case ef: ParserF.EnvF      => getEnv(ef.name).iKnowItsAn[A]
+      case cf: ParserF.CommandF  => popCommand(cf.name).iKnowItsAn[A]
     }
   }
 
   def main(args: Array[String]): Unit = {
-    import Parser._
+    import Parser.Parser._
     import net.andimiller.turtles.flying.schemes._
     val runner = hhylo(parserRunner, embed)
     def run[O](s: ParserInput)(p: Parser[O]): Either[String, O] = runner(p).value.run(s).value._2
@@ -100,6 +111,12 @@ object Runner {
       ParserInput(List.empty, scala.Predef.Map())
     )(
       Env("NUMBER", "a number").map(_.toInt)
+    ))
+
+    println(run(
+      ParserInput(List("ls", "."), scala.Predef.Map())
+    )(
+        Command("ls").map(_ => identity[String](_)).ap(Arg("folder")),
     ))
   }
 

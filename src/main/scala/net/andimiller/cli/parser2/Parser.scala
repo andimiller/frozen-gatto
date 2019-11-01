@@ -41,6 +41,7 @@ object Parser {
     final case class LongOpt(long: String, short: Option[String], metavar: Option[String], default: Option[String], help: Option[String])
         extends Parser[String]
     final case class Env(name: String, help: String) extends Parser[String]
+    final case class Command(name: String) extends Parser[Unit]
 
     implicit val instances: Applicative[Parser] with Alternative[Parser] = new Applicative[Parser] with Alternative[Parser] {
       override def pure[A](x: A): Parser[A]                               = Pure(x)
@@ -64,6 +65,8 @@ object Parser {
     final case class LongOptF(long: String, short: Option[String], metavar: Option[String], default: Option[String], help: Option[String])
         extends ParserF[Nothing, String]
     final case class EnvF(name: String, help: String) extends ParserF[Nothing, String]
+    final case class CommandF(name: String) extends ParserF[Nothing, Unit]
+
 
     implicit val parserFHFunctor: HFunctor[ParserF] = new HFunctor[ParserF] {
       override def hmap[I[_], J[_]](nt: I ~> J): ParserF[I, *] ~> ParserF[J, *] =
@@ -78,6 +81,7 @@ object Parser {
             case ArgF(metavar)                                 => ArgF(metavar)
             case LongOptF(long, short, metavar, default, help) => LongOptF(long, short, metavar, default, help)
             case EnvF(name, help)                              => EnvF(name, help)
+            case CommandF(name)                                => CommandF(name)
           }
         }
     }
@@ -94,6 +98,7 @@ object Parser {
       case ParserF.ArgF(metavar)                                 => Parser.Arg(metavar)
       case ParserF.LongOptF(long, short, metavar, default, help) => Parser.LongOpt(long, short, metavar, default, help)
       case ParserF.EnvF(name, help)                              => Parser.Env(name, help)
+      case ParserF.CommandF(name)                                => Parser.Command(name)
     }
   }
 
@@ -108,6 +113,7 @@ object Parser {
       case Parser.Arg(metavar)                                 => ParserF.ArgF(metavar)
       case Parser.LongOpt(long, short, metavar, default, help) => ParserF.LongOptF(long, short, metavar, default, help)
       case Parser.Env(name, help)                              => ParserF.EnvF(name, help)
+      case Parser.Command(name)                                => ParserF.CommandF(name)
     }
   }
 
